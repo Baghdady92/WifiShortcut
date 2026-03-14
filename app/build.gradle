@@ -1,0 +1,24 @@
+apply plugin: 'com.android.application'
+
+def appVersionName = project.hasProperty('VERSION_NAME') ? project.VERSION_NAME : '1.0'
+def appVersionCode = project.hasProperty('VERSION_CODE') ? project.VERSION_CODE.toInteger() : 1
+
+android {
+    compileSdkVersion 33
+    defaultConfig {
+        applicationId "com.example.wifishortcut"
+        minSdkVersion 28
+        targetSdkVersion 33
+        versionCode appVersionCode
+        versionName appVersionName
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
