@@ -128,9 +128,26 @@ Create a GitHub Release with assets (requires GitHub CLI and auth):
 make github-release TAG=v1.0.0
 ```
 
+Build and publish a public GitHub Release in one command:
+
+```bash
+make public-release TAG=v1.0.0
+```
+
+Optionally target a specific repository:
+
+```bash
+make public-release TAG=v1.0.0 REPO=Baghdady92/WifiShortcut
+```
+
 The `github-release` target uses:
 - `TAG` (for example `v1.2.3`) as app `versionName` (`1.2.3`)
 - Git commit count as app `versionCode`
+
+The `public-release` target:
+- Builds release APK and AAB with version from tag
+- Creates the tag if missing and pushes it to `origin`
+- Publishes a non-draft GitHub Release with uploaded artifacts
 
 Release artifacts:
 

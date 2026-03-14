@@ -8,8 +8,9 @@ RELEASE_AAB := app/build/outputs/bundle/release/app-release.aab
 VERSION ?= 1.0.0
 VERSION_CODE ?= 1
 GRADLE_VERSION_ARGS := -PVERSION_NAME=$(VERSION) -PVERSION_CODE=$(VERSION_CODE)
+REPO ?= Baghdady92/WifiShortcut
 
-.PHONY: help clean debug release bundle all artifacts github-release
+.PHONY: help clean debug release bundle all artifacts github-release public-release
 
 help:
 	@echo "Available targets:"
@@ -22,6 +23,7 @@ help:
 	@echo "  make release VERSION=1.2.3 VERSION_CODE=12 - Build release APK with version values"
 	@echo "  make bundle VERSION=1.2.3 VERSION_CODE=12  - Build release AAB with version values"
 	@echo "  make github-release TAG=vX.Y.Z - Build release assets and publish a GitHub Release"
+	@echo "  make public-release TAG=vX.Y.Z [REPO=owner/name] - Build, tag, push, and publish public release"
 
 clean:
 	$(GRADLEW) clean
@@ -48,3 +50,14 @@ github-release:
 	@VERSION_FROM_TAG=$${TAG#v}; VERSION_CODE_FROM_GIT=$$(git rev-list --count HEAD); \
 		$(GRADLEW) assembleRelease bundleRelease -PVERSION_NAME=$$VERSION_FROM_TAG -PVERSION_CODE=$$VERSION_CODE_FROM_GIT
 	@gh release create "$(TAG)" "$(RELEASE_APK)" "$(RELEASE_AAB)" --generate-notes
+
+public-release:
+	@test -n "$(TAG)" || (echo "Error: TAG is required. Example: make public-release TAG=v1.0.0" && exit 1)
+	@command -v git >/dev/null 2>&1 || (echo "Error: git is required." && exit 1)
+	@command -v gh >/dev/null 2>&1 || (echo "Error: GitHub CLI (gh) is required." && exit 1)
+	@gh auth status >/dev/null 2>&1 || (echo "Error: gh is not authenticated. Run: gh auth login" && exit 1)
+	@VERSION_FROM_TAG=$${TAG#v}; VERSION_CODE_FROM_GIT=$$(git rev-list --count HEAD); \
+		$(GRADLEW) assembleRelease bundleRelease -PVERSION_NAME=$$VERSION_FROM_TAG -PVERSION_CODE=$$VERSION_CODE_FROM_GIT
+	@git rev-parse "$(TAG)" >/dev/null 2>&1 || git tag "$(TAG)"
+	@git push origin "$(TAG)"
+	@gh release create "$(TAG)" "$(RELEASE_APK)" "$(RELEASE_AAB)" --repo "$(REPO)" --title "WifiShortcut $${TAG}" --generate-notes --latest
